@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Сборка приложения
-RUN go build -o main ./cmd/auth
+RUN go build -o main ./app/main.go
 
 # Запуск приложения
 CMD ["./main"]

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -10,12 +8,12 @@ services:
     depends_on:
       - auth-db
     environment:
-      - DB_HOST=auth-db
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=1234
-      - DB_NAME=authdb
-      - JWT_SECRET=53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - localnet
 
@@ -24,11 +22,11 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: authdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-    # networks:
-    #   - localnet
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - localnet
     volumes:
       - ./db:/docker-entrypoint-initdb.d/ # скрипт инициализации бд
     command: ["postgres", "-c", "log_statement=all"]
