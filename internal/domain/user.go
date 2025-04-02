@@ -10,11 +10,13 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID `json:"id"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"-"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID           uuid.UUID  `json:"id" gorm:"type:uuid;primary_key; default:uuid_generate_v4()"`
+	Email        string     `json:"email" gorm:"unique;not null"`
+	PasswordHash string     `json:"-" gorm:"not null"`
+	RoleID       *uuid.UUID `json:"role_id,omitempty" gorm:"type:uuid;default:null"`
+	Role         *Role      `json:"role,omitempty" gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 type CreateUserRequest struct {

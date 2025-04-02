@@ -36,7 +36,7 @@ func NewJWTService(jwtSigningKey string, expiration uint32) JWTService {
 func (s *jwtService) GenerateToken(user domain.User) (string, error) {
 	claims := jwt.MapClaims{
 		"username": user.Email,
-		"exp":      time.Now().Add(time.Duration(s.expiration) * time.Second).Unix(),
+		"exp":      time.Now().Add(time.Duration(s.expiration) * time.Millisecond).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(s.jwtSigningKey)

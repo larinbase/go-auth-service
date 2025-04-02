@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -19,14 +21,21 @@ type Config struct {
 	JWTSecret  string
 }
 
+func Init() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(fmt.Errorf("error loading .env file"))
+	}
+}
+
 func LoadConfig() *Config {
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "1234"),
-		DBName:     getEnv("DB_NAME", "authdb"),
-		JWTSecret:  getEnv("JWT_SECRET", "53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855"),
+		DBHost:     getEnv("DB_HOST"),
+		DBPort:     getEnv("DB_PORT"),
+		DBUser:     getEnv("DB_USER"),
+		DBPassword: getEnv("DB_PASSWORD"),
+		DBName:     getEnv("DB_NAME"),
+		JWTSecret:  getEnv("JWT_SECRET"),
 	}
 }
 
@@ -35,11 +44,11 @@ func (c *Config) GetDBConnString() string {
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
 }
 
-func getEnv(key, defaultValue string) string {
+func getEnv(key string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
-	return defaultValue
+	panic(fmt.Errorf("failed to get enviroment %s", key))
 }
 
 func (c *Config) GetDSN() string {
@@ -63,7 +72,18 @@ func InitDB(config *Config) (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 
-	err = db.AutoMigrate(&domain.User{})
+	err = db.AutoMigrate(&domain.Role{}, &domain.User{})
+
+	// Создание дефолтных ролей
+	var count int64
+	db.Model(&domain.Role{}).Count(&count)
+	if count == 0 {
+		db.Create(&domain.Role{Name: domain.Author})
+		db.Create(&domain.Role{Name: domain.Reviewer})
+		db.Create(&domain.Role{Name: domain.Reader})
+		db.Create(&domain.Role{Name: domain.Editor})
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %v", err)
 	}

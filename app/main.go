@@ -6,7 +6,6 @@ import (
 	"auth-service/internal/repository"
 	"auth-service/internal/service"
 
-	// "auth-service/internal/service"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +13,7 @@ import (
 
 func main() {
 	// Инициализация бд
+	config.Init()
 	cfg := config.LoadConfig()
 	db, err := config.InitDB(cfg)
 
