@@ -72,7 +72,7 @@ func InitDB(config *Config) (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 
-	err = db.AutoMigrate(&domain.Role{}, &domain.User{})
+	err = db.AutoMigrate(&domain.Role{}, &domain.User{}, &domain.RefreshSession{})
 
 	// Создание дефолтных ролей
 	var count int64

@@ -23,14 +23,15 @@ func main() {
 
 	// Инициализация сервисов
 	userRepository := repository.NewUserRepository(db)
-	jwtService := service.NewJWTService(cfg.JWTSecret, 144000000)
-	userService := service.NewUserService(userRepository, jwtService)
+	jwtService := service.NewJWTService(cfg.JWTSecret, 7200000)
+	refreshSessionRepository := repository.NewRefreshSessionRepository(db)
+	userService := service.NewUserService(userRepository, jwtService, refreshSessionRepository)
 	authHandler := handler.NewAuthHandler(userService)
 
 	// Инициализация роутера Gin
 	r := gin.Default()
 
-	// Настройка middleware
+	// Настройка
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
@@ -40,6 +41,7 @@ func main() {
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
+		auth.POST("/refresh-tokens", authHandler.RefreshTokens)
 	}
 
 	// Запуск сервера

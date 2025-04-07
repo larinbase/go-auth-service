@@ -29,6 +29,11 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type TokenCoupleRequest struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func (u *User) ValidatePassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
 	return err == nil

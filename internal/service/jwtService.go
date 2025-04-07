@@ -2,6 +2,8 @@ package service
 
 import (
 	"auth-service/internal/domain"
+	"auth-service/internal/dto"
+	"github.com/google/uuid"
 
 	"time"
 
@@ -12,7 +14,8 @@ import (
  * @author Dmitriy Larin
  **/
 type JWTService interface {
-	GenerateToken(user domain.User) (string, error)
+	GenerateTokenCouple(user domain.User) (*dto.TokenCoupleResponse, error)
+	ExtractUsername(token string) (string, error)
 }
 
 type jwtService struct {
@@ -33,7 +36,7 @@ func NewJWTService(jwtSigningKey string, expiration uint32) JWTService {
  * @param userDetails данные пользователя
  * @return токен
  */
-func (s *jwtService) GenerateToken(user domain.User) (string, error) {
+func (s *jwtService) GenerateTokenCouple(user domain.User) (*dto.TokenCoupleResponse, error) {
 	roleName := ""
 	if user.Role != nil {
 		roleName = user.Role.Name.Value()
@@ -46,19 +49,22 @@ func (s *jwtService) GenerateToken(user domain.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(s.jwtSigningKey)
 	if err != nil {
-		return "", err
+		return dto.NewTokenCoupleResponse("", ""), err
 	}
-	return signedToken, nil
+
+	refreshToken := uuid.New().String()
+
+	return dto.NewTokenCoupleResponse(signedToken, refreshToken), nil
 }
 
 /**
- * Пороверка токена на валидность
+ * Проверка токена на валидность
  *
  * @param token
  * @return userDetails
  */
 func (s *jwtService) isTokenValid(token string, user domain.User) (bool, error) {
-	username, err := s.extractUsername(token)
+	username, err := s.ExtractUsername(token)
 	if err != nil {
 		return false, err
 	}
@@ -103,7 +109,7 @@ func (s *jwtService) extractExpiration(token string) (*jwt.NumericDate, error) {
 * @param token токен
 * @return имя пользователя
  */
-func (s *jwtService) extractUsername(token string) (string, error) {
+func (s *jwtService) ExtractUsername(token string) (string, error) {
 	claims, err := s.extractAllClaims(token)
 	if err != nil {
 		return "", err
