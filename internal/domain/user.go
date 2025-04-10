@@ -62,3 +62,11 @@ func ValidatePassword(password string) error {
 	}
 	return nil
 }
+
+func (u *User) SetPasswordHash(hashPassword string) {
+	u.PasswordHash = hashPassword
+}
+
+func (u *User) SetUpdateAt(time time.Time) {
+	u.UpdatedAt = time
+}

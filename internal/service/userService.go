@@ -131,3 +131,36 @@ func (s *UserService) RefreshTokens(req *domain.TokenCoupleRequest) (*dto.TokenC
 
 	return tokenCouple, nil
 }
+
+func (s *UserService) ChangePassword(email string, req *dto.ChangePasswordRequest) (*dto.UserResponse, error) {
+	user, err := s.userRepo.GetByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	if !user.ValidatePassword(req.OldPassword) {
+		return nil, exception.InvalidPassword
+	}
+
+	hashedPassword, err := domain.HashPassword(req.NewPassword)
+
+	user.SetPasswordHash(hashedPassword)
+
+	err = s.userRepo.Update(user)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err = s.userRepo.GetByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.NewUserResponse(
+		user.ID,
+		user.Email,
+		user.Role.Name.Value(),
+		user.CreatedAt,
+		user.UpdatedAt,
+	), nil
+}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"auth-service/internal/domain"
 
@@ -45,4 +46,10 @@ func (r *UserRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 		return nil, result.Error
 	}
 	return user, nil
+}
+
+func (r *UserRepository) Update(user *domain.User) error {
+	user.SetUpdateAt(time.Now())
+	result := r.db.Save(user)
+	return result.Error
 }

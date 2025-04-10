@@ -3,6 +3,7 @@ package main
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/handler"
+	"auth-service/internal/middleware"
 	"auth-service/internal/repository"
 	"auth-service/internal/service"
 
@@ -27,6 +28,7 @@ func main() {
 	refreshSessionRepository := repository.NewRefreshSessionRepository(db)
 	userService := service.NewUserService(userRepository, jwtService, refreshSessionRepository)
 	authHandler := handler.NewAuthHandler(userService)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Инициализация роутера Gin
 	r := gin.Default()
@@ -42,6 +44,12 @@ func main() {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/refresh-tokens", authHandler.RefreshTokens)
+	}
+
+	user := api.Group("/user")
+	user.Use(middleware.AuthMiddleware())
+	{
+		user.PATCH("/change-password", userHandler.ChangePassword)
 	}
 
 	// Запуск сервера
