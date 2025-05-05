@@ -36,6 +36,7 @@ func main() {
 	// Настройка
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(middleware.ErrorHandler())
 
 	// Группа маршрутов API
 	api := r.Group("/api/v1")

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"auth-service/internal/exception"
-	"errors"
 	"net/http"
 
 	"auth-service/internal/domain"
@@ -25,22 +24,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	var req domain.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		controller.ErrorResponse(http.StatusBadRequest, "Invalid request format", err.Error())
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
 		return
 	}
 
 	response, err := h.userService.Register(&req)
 
 	if err != nil {
-		if errors.Is(err, exception.UserAlreadyExists) {
-			controller.ErrorResponse(http.StatusConflict, exception.UserAlreadyExists.Error(), err.Error())
-			return
-		}
-		if errors.Is(err, exception.InvalidEmail) || errors.Is(err, exception.InvalidPassword) {
-			controller.ErrorResponse(http.StatusBadRequest, "Invalid request", err.Error())
-			return
-		}
-		controller.ErrorResponse(http.StatusInternalServerError, err.Error(), err.Error())
+		c.Error(err)
 		return
 	}
 
@@ -52,17 +43,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	var req domain.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		controller.ErrorResponse(http.StatusBadRequest, "Invalid request format", err.Error())
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
 		return
 	}
 
 	response, err := h.userService.Login(&req)
 	if err != nil {
-		if errors.Is(err, exception.InvalidEmail) || errors.Is(err, exception.InvalidPassword) {
-			controller.ErrorResponse(http.StatusBadRequest, "Invalid request", err.Error())
-			return
-		}
-		controller.ErrorResponse(http.StatusUnauthorized, err.Error(), err.Error())
+		c.Error(err)
 		return
 	}
 	controller.SuccessResponse(http.StatusOK, response)
@@ -73,17 +60,13 @@ func (h *AuthHandler) RefreshTokens(c *gin.Context) {
 
 	var req domain.TokenCoupleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		controller.ErrorResponse(http.StatusBadRequest, "Invalid request format", err.Error())
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
 		return
 	}
 
 	response, err := h.userService.RefreshTokens(&req)
 	if err != nil {
-		if errors.Is(err, exception.RefreshTokenIsAlreadyExpired) {
-			controller.ErrorResponse(http.StatusUnauthorized, exception.UserAlreadyExists.Error(), err.Error())
-			return
-		}
-		controller.ErrorResponse(http.StatusUnauthorized, err.Error(), err.Error())
+		c.Error(err)
 		return
 	}
 	controller.SuccessResponse(http.StatusOK, response)

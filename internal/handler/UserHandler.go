@@ -6,7 +6,6 @@ import (
 	responseDto "auth-service/internal/handler/dto"
 	"auth-service/internal/service"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -26,27 +25,27 @@ func (handler *UserHandler) ChangePassword(c *gin.Context) {
 
 	var req dto.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		controller.ErrorResponse(http.StatusBadRequest, "Invalid request format", err.Error())
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
 		return
 	}
 
 	var email, exist = c.Get("username")
 	if exist != true {
-		controller.ErrorResponse(http.StatusForbidden, "FORBIDDEN", fmt.Sprintf("Не удалось распознать имя пользователя"))
+		c.Error(exception.NewAppError("Не удалось распознать имя пользователя", http.StatusForbidden))
 		return
 	}
 
 	response, err := handler.userService.ChangePassword(email.(string), &req)
 	if err != nil {
 		if errors.Is(err, exception.InvalidEmail) {
-			controller.ErrorResponse(http.StatusNotFound, "user not found", err.Error())
+			c.Error(exception.NewAppError("user not found", http.StatusNotFound))
 			return
 		}
 		if errors.Is(err, exception.InvalidPassword) {
-			controller.ErrorResponse(http.StatusForbidden, "old password doesn't match", err.Error())
+			c.Error(exception.NewAppError("old password doesn't match", http.StatusForbidden))
 			return
 		}
-		controller.ErrorResponse(http.StatusUnauthorized, err.Error(), err.Error())
+		c.Error(exception.NewAppError(err.Error(), http.StatusInternalServerError))
 		return
 	}
 	controller.SuccessResponse(http.StatusOK, response)
