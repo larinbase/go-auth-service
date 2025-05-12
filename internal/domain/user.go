@@ -29,6 +29,15 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type LoginV2Request struct {
+	Email string `json:"email" binding:"required,email"`
+	Code  int    `json:"code" binding:"required"`
+}
+
+type SendCodeRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
 type TokenCoupleRequest struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

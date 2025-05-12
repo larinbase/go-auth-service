@@ -26,7 +26,9 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	jwtService := service.NewJWTService(cfg.JWTSecret, 7200000)
 	refreshSessionRepository := repository.NewRefreshSessionRepository(db)
-	userService := service.NewUserService(userRepository, jwtService, refreshSessionRepository)
+	emailService := service.NewEmailService(cfg.EmailApiUsername, cfg.EmailApiPassword)
+	emailManager := service.NewEmailManager(10, emailService)
+	userService := service.NewUserService(userRepository, jwtService, refreshSessionRepository, emailManager)
 	authHandler := handler.NewAuthHandler(userService)
 	userHandler := handler.NewUserHandler(userService)
 
@@ -45,6 +47,8 @@ func main() {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/refresh-tokens", authHandler.RefreshTokens)
+		auth.POST("/v2/login", authHandler.LoginV2)
+		auth.POST("/v2/sendCode", authHandler.SendCode)
 	}
 
 	user := api.Group("/user")

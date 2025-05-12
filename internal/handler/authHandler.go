@@ -71,3 +71,37 @@ func (h *AuthHandler) RefreshTokens(c *gin.Context) {
 	}
 	controller.SuccessResponse(http.StatusOK, response)
 }
+
+func (h *AuthHandler) LoginV2(c *gin.Context) {
+	controller := dto.Gin{C: c}
+
+	var req domain.LoginV2Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
+		return
+	}
+
+	response, err := h.userService.LoginV2(&req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	controller.SuccessResponse(http.StatusOK, response)
+}
+
+func (h *AuthHandler) SendCode(c *gin.Context) {
+	controller := dto.Gin{C: c}
+
+	var req domain.SendCodeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
+		return
+	}
+
+	err := h.userService.SendEmailCode(&req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	controller.SuccessResponse(http.StatusOK, "successfully sent")
+}

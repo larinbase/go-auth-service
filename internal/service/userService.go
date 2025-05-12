@@ -5,6 +5,7 @@ import (
 	"auth-service/internal/dto"
 	"auth-service/internal/exception"
 	"auth-service/internal/repository"
+	"net/http"
 
 	"github.com/google/uuid"
 	"time"
@@ -14,13 +15,15 @@ type UserService struct {
 	userRepo                 *repository.UserRepository
 	jwtService               JWTService
 	refreshSessionRepository *repository.RefreshSessionRepository
+	emailManager             *EmailManager
 }
 
-func NewUserService(userRepository *repository.UserRepository, jwtService JWTService, refreshSessionRepository repository.RefreshSessionRepository) *UserService {
+func NewUserService(userRepository *repository.UserRepository, jwtService JWTService, refreshSessionRepository repository.RefreshSessionRepository, emailManager *EmailManager) *UserService {
 	return &UserService{
 		userRepo:                 userRepository,
 		jwtService:               jwtService,
 		refreshSessionRepository: &refreshSessionRepository,
+		emailManager:             emailManager,
 	}
 }
 
@@ -95,6 +98,38 @@ func (s *UserService) Login(req *domain.LoginRequest) (*dto.TokenCoupleResponse,
 	}
 
 	return tokenCouple, nil
+}
+
+func (s *UserService) LoginV2(req *domain.LoginV2Request) (*dto.TokenCoupleResponse, error) {
+
+	user, err := s.userRepo.GetByEmail(req.Email)
+	if err != nil {
+		return nil, exception.InvalidEmail
+	}
+
+	if !s.emailManager.ValidateCode(req.Email, req.Code) {
+		return nil, exception.NewAppError("invalid code: "+req.Email, http.StatusBadRequest)
+	}
+
+	tokenCouple, err := s.jwtService.GenerateTokenCouple(*user)
+	if err != nil {
+		return nil, err
+	}
+
+	session := &domain.RefreshSession{}
+	session.SetId(tokenCouple.RefreshToken)
+	session.SetExpiresIn(time.Now().Add(time.Duration(1440) * time.Hour))
+
+	err = s.refreshSessionRepository.Create(session)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokenCouple, nil
+}
+
+func (s *UserService) SendEmailCode(req *domain.SendCodeRequest) error {
+	return s.emailManager.SendEmailCode(req.Email)
 }
 
 func (s *UserService) RefreshTokens(req *domain.TokenCoupleRequest) (*dto.TokenCoupleResponse, error) {

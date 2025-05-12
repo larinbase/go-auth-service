@@ -13,12 +13,15 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	JWTSecret  string
+	DBHost           string
+	DBPort           string
+	DBUser           string
+	DBPassword       string
+	DBName           string
+	JWTSecret        string
+	EmailApiKey      string
+	EmailApiUsername string
+	EmailApiPassword string
 }
 
 func Init() {
@@ -30,12 +33,14 @@ func Init() {
 
 func LoadConfig() *Config {
 	return &Config{
-		DBHost:     getEnv("DB_HOST"),
-		DBPort:     getEnv("DB_PORT"),
-		DBUser:     getEnv("DB_USER"),
-		DBPassword: getEnv("DB_PASSWORD"),
-		DBName:     getEnv("DB_NAME"),
-		JWTSecret:  getEnv("JWT_SECRET"),
+		DBHost:           getEnv("DB_HOST"),
+		DBPort:           getEnv("DB_PORT"),
+		DBUser:           getEnv("DB_USER"),
+		DBPassword:       getEnv("DB_PASSWORD"),
+		DBName:           getEnv("DB_NAME"),
+		JWTSecret:        getEnv("JWT_SECRET"),
+		EmailApiUsername: getEnv("EMAIL_API_USERNAME"),
+		EmailApiPassword: getEnv("EMAIL_API_PASSWORD"),
 	}
 }
 
