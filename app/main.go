@@ -29,7 +29,8 @@ func main() {
 	emailService := service.NewEmailService(cfg.EmailApiUsername, cfg.EmailApiPassword)
 	emailManager := service.NewEmailManager(10, emailService)
 	userService := service.NewUserService(userRepository, jwtService, refreshSessionRepository, emailManager)
-	authHandler := handler.NewAuthHandler(userService)
+	keycloakService := service.NewKeycloakService(cfg.KeycloakServerURL, cfg.KeycloakRealm, cfg.KeycloakClientID, cfg.KeycloakAdminUsername, cfg.KeycloakAdminPassword, userRepository)
+	authHandler := handler.NewAuthHandler(userService, keycloakService)
 	userHandler := handler.NewUserHandler(userService)
 
 	// Инициализация роутера Gin
@@ -41,7 +42,7 @@ func main() {
 	r.Use(middleware.ErrorHandler())
 
 	// Группа маршрутов API
-	api := r.Group("/api/v1")
+	api := r.Group("/api")
 	auth := api.Group("/auth")
 	{
 		auth.POST("/register", authHandler.Register)
@@ -49,6 +50,7 @@ func main() {
 		auth.POST("/refresh-tokens", authHandler.RefreshTokens)
 		auth.POST("/v2/login", authHandler.LoginV2)
 		auth.POST("/v2/sendCode", authHandler.SendCode)
+		auth.POST("/v3/keycloak/register", authHandler.RegisterKeyCloak)
 	}
 
 	user := api.Group("/user")
@@ -58,7 +60,7 @@ func main() {
 	}
 
 	// Запуск сервера
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(":8081"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

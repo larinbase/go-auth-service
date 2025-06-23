@@ -13,15 +13,20 @@ import (
 )
 
 type Config struct {
-	DBHost           string
-	DBPort           string
-	DBUser           string
-	DBPassword       string
-	DBName           string
-	JWTSecret        string
-	EmailApiKey      string
-	EmailApiUsername string
-	EmailApiPassword string
+	DBHost                string
+	DBPort                string
+	DBUser                string
+	DBPassword            string
+	DBName                string
+	JWTSecret             string
+	EmailApiKey           string
+	EmailApiUsername      string
+	EmailApiPassword      string
+	KeycloakServerURL     string
+	KeycloakRealm         string
+	KeycloakClientID      string
+	KeycloakAdminUsername string
+	KeycloakAdminPassword string
 }
 
 func Init() {
@@ -33,14 +38,19 @@ func Init() {
 
 func LoadConfig() *Config {
 	return &Config{
-		DBHost:           getEnv("DB_HOST"),
-		DBPort:           getEnv("DB_PORT"),
-		DBUser:           getEnv("DB_USER"),
-		DBPassword:       getEnv("DB_PASSWORD"),
-		DBName:           getEnv("DB_NAME"),
-		JWTSecret:        getEnv("JWT_SECRET"),
-		EmailApiUsername: getEnv("EMAIL_API_USERNAME"),
-		EmailApiPassword: getEnv("EMAIL_API_PASSWORD"),
+		DBHost:                getEnv("DB_HOST"),
+		DBPort:                getEnv("DB_PORT"),
+		DBUser:                getEnv("DB_USER"),
+		DBPassword:            getEnv("DB_PASSWORD"),
+		DBName:                getEnv("DB_NAME"),
+		JWTSecret:             getEnv("JWT_SECRET"),
+		EmailApiUsername:      getEnv("EMAIL_API_USERNAME"),
+		EmailApiPassword:      getEnv("EMAIL_API_PASSWORD"),
+		KeycloakServerURL:     getEnv("KEYCLOAK_SERVER_URL"),
+		KeycloakRealm:         getEnv("KEYCLOAK_REALM"),
+		KeycloakClientID:      getEnv("KEYCLOAK_CLIENT_ID"),
+		KeycloakAdminUsername: getEnv("KEYCLOAK_ADMIN_USERNAME"),
+		KeycloakAdminPassword: getEnv("KEYCLOAK_ADMIN_PASSWORD"),
 	}
 }
 

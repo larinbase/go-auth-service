@@ -12,11 +12,12 @@ import (
 )
 
 type AuthHandler struct {
-	userService *service.UserService
+	userService     *service.UserService
+	keycloakService *service.KeycloakService
 }
 
-func NewAuthHandler(userService *service.UserService) *AuthHandler {
-	return &AuthHandler{userService: userService}
+func NewAuthHandler(userService *service.UserService, keycloakService *service.KeycloakService) *AuthHandler {
+	return &AuthHandler{userService: userService, keycloakService: keycloakService}
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -104,4 +105,24 @@ func (h *AuthHandler) SendCode(c *gin.Context) {
 		return
 	}
 	controller.SuccessResponse(http.StatusOK, "successfully sent")
+}
+
+func (h *AuthHandler) RegisterKeyCloak(c *gin.Context) {
+	controller := dto.Gin{C: c}
+
+	var req domain.CreateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(exception.NewAppError("Invalid request format", http.StatusBadRequest))
+		return
+	}
+
+	ctx := c.Request.Context()
+	err := h.keycloakService.RegisterUser(ctx, &req)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	controller.SuccessResponse(http.StatusCreated, "successfully registered")
 }

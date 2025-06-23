@@ -12,6 +12,15 @@ require (
 )
 
 require (
+	github.com/Nerzal/gocloak/v13 v13.9.0 // indirect
+	github.com/go-resty/resty/v2 v2.7.0 // indirect
+	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/resend/resend-go/v2 v2.19.0 // indirect
+	github.com/segmentio/ksuid v1.0.4 // indirect
+)
+
+require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

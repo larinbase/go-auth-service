@@ -31,10 +31,67 @@ services:
       - localnet
     volumes:
       - ./db:/docker-entrypoint-initdb.d/ # скрипт инициализации бд
-    command: ["postgres", "-c", "log_statement=all"]
+      - postgres_data:/var/lib/postgresql/data
+    command: [ "postgres", "-c", "log_statement=all" ]
+
+  kc-postgres:
+    image: postgres:17.5-alpine
+    restart: "no"
+    ports:
+      - "5431:5432"
+    volumes:
+      - kc-postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: keycloak_admin
+      POSTGRES_PASSWORD: keycloak_admin
+      POSTGRES_DB: keycloak-db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - localnet
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.5
+    restart: "no"
+    command:
+      - "start-dev"
+    ports:
+      - "9080:9080"
+      - "9000:9000"
+    environment:
+      KC_HOSTNAME: http://localhost:9080
+      KC_BACKCHANNEL_DYNAMIC: true
+      KC_HTTP_PORT: 9080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: kc-postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak-db
+      KC_DB_USERNAME: keycloak_admin
+      KC_DB_PASSWORD: keycloak_admin
+      KC_HEALTH_ENABLED: "true"
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "{ exec 3<>/dev/tcp/localhost/9000 && echo -e \"GET /health/ready HTTP/1.1\nhost: localhost:9000\n\" >&3 && timeout --preserve-status 1 cat <&3 | grep -m 1 -q 'status.*UP'; }" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      kc-postgres:
+        condition: service_healthy
+    networks:
+      - localnet
+
 
 volumes:
   postgres_data:
+  kc-postgres_data:
 
 networks:
   localnet:

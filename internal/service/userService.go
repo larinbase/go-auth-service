@@ -28,7 +28,6 @@ func NewUserService(userRepository *repository.UserRepository, jwtService JWTSer
 }
 
 func (s *UserService) Register(req *domain.CreateUserRequest) (*dto.TokenCoupleResponse, error) {
-	// Валидация входных данных
 	if err := domain.ValidateEmail(req.Email); err != nil {
 		return nil, exception.InvalidEmail
 	}
