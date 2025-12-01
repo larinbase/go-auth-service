@@ -57,18 +57,18 @@ make up     # или docker-compose up --build
 ## 📚 API Reference
 
 #### 1. **Регистрация**
-
-POST /api/v1/auth/register
-
-_Body:_
 ```
+POST /api/v1/auth/register
+```
+_Body:_
+```json
 {
   "email": "user@example.com",
   "password": "securepassword"
 }
 ```
 _Response:_
-```
+```json
 {
   "data": {
     "access_token": "jwt.token.here",
@@ -79,8 +79,9 @@ _Response:_
 ```
 
 #### 2. **Логин по email/паролю**
-
+```
 POST /api/auth/login
+```
 _Body:_
 ```json
 {
@@ -91,8 +92,10 @@ _Body:_
 _Response аналогичен регистрации._
 
 #### 3. **Обновление токенов**
-
+```
 POST /api/auth/refresh-tokens
+```
+
 _Body:_
 ```json
 {
@@ -103,8 +106,9 @@ _Body:_
 _Response аналогичен регистрации._
 
 #### 4. **Отправка кода на email (2FA или magic link)**
-
+```
 POST /api/auth/v2/sendCode
+```
 
 _Body:_
 ```json
@@ -113,8 +117,10 @@ _Body:_
 }
 ```
 #### 5. **Логин по коду**
-
+```
 POST /api/auth/v2/login
+```
+
 _Body:_
 ```json
 {
@@ -123,7 +129,10 @@ _Body:_
 }
 ```
 #### 6. **Регистрация через Keycloak**
+```
  POST /api/auth/v3/keycloak/register
+ ```
+ 
 _Body:_
 ```json
 {
@@ -135,8 +144,12 @@ _Body:_
 
 ### Пользователь
 #### 1. **Смена пароля**
+```
 PATCH /api/user/change-password
+
 Headers: Authorization: Bearer <token>
+```
+
 _Body:_
 ```json
 {
