@@ -56,17 +56,19 @@ make up     # или docker-compose up --build
 
 ## 📚 API Reference
 
-### Auth
-
 #### 1. **Регистрация**
-```json
+
 POST /api/v1/auth/register
-Body:
+
+_Body:_
+```
 {
   "email": "user@example.com",
   "password": "securepassword"
 }
+```
 _Response:_
+```
 {
   "data": {
     "access_token": "jwt.token.here",
@@ -75,47 +77,55 @@ _Response:_
   "success": true
 }
 ```
+
 #### 2. **Логин по email/паролю**
-```json
+
 POST /api/auth/login
-Body:
+_Body:_
+```json
 {
   "email": "user@example.com",
   "password": "securepassword"
 }
-_Response аналогичен регистрации._
 ```
+_Response аналогичен регистрации._
+
 #### 3. **Обновление токенов**
-```json
+
 POST /api/auth/refresh-tokens
-Body:
+_Body:_
+```json
 {
   "access_token": "...",
   "refresh_token": "..."
 }
-_Response аналогичен регистрации._
 ```
+_Response аналогичен регистрации._
+
 #### 4. **Отправка кода на email (2FA или magic link)**
-```json
+
 POST /api/auth/v2/sendCode
-Body:
+
+_Body:_
+```json
 {
   "email": "user@example.com"
 }
 ```
 #### 5. **Логин по коду**
-```json
+
 POST /api/auth/v2/login
-Body:
+_Body:_
+```json
 {
   "email": "user@example.com",
   "code": 100000
 }
 ```
 #### 6. **Регистрация через Keycloak**
+ POST /api/auth/v3/keycloak/register
+_Body:_
 ```json
-POST /api/auth/v3/keycloak/register
-Body:
 {
   "email": "user@example.com",
   "password": "securepassword"
@@ -125,10 +135,10 @@ Body:
 
 ### Пользователь
 #### 1. **Смена пароля**
-```json
 PATCH /api/user/change-password
 Headers: Authorization: Bearer <token>
-Body:
+_Body:_
+```json
 {
   "old_password": "oldpassword",
   "new_password": "newpassword"
