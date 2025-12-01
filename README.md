@@ -1,81 +1,137 @@
-# Микросервис для управления пользователями
+# Сервис авторизации и управления пользователями на Go
+
+![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat&logo=docker)
 
 ---
+
 ## Описание
-Разрабатываемый сервис управления пользователями предназначен для аутентификации, авторизации и управления профилями пользователей в веб-приложениях. Он обеспечивает безопасный доступ к системе, контроль прав пользователей и централизованное управление учетными записями. Данный сервис позволит разработчикам интегрировать его в свои проекты, обеспечивая удобную и гибкую систему аутентификации.
+
+Go Auth Service — микросервис для аутентификации, авторизации и управления профилями пользователей в современных веб-приложениях. Поддерживает вход по паролю, одноразовому коду, рефреш токены, интеграцию с Keycloak, смену пароля пользователя и безопасное хранение учетных данных. Идеален для разработки защищённых SaaS-платформ и b2b/b2c решений.
+
+---
+
+##  Ключевые возможности
+
+- Регистрация/логин через email и пароль
+- Вход по email + one-time code (`/auth/v2/sendCode`, `/auth/v2/login`)
+- JWT для аутентификации и refresh токены
+- Интеграция с Keycloak (`/auth/v3/keycloak/register`)
+- Управление паролями (смена пароля)
+- Гибкая архитектура (легко расширяется)
+- Защищённые эндпоинты, работа с ролями
 
 ---
 
 ## Технологический стек
-- Go 1.21+
-- Gin Web Framework
-- PostgreSQL
-- JWT для аутентификации
-- bcrypt для хеширования паролей
-- Docker & Docker Compose
+
+- **Go** 1.21+
+- **Gin Web Framework**
+- **PostgreSQL** (рекомендовано 15+)
+- **JWT** (golang-jwt/jwt)
+- **bcrypt** для паролей
+- **Docker & Docker Compose**
+- **Makefile** для автоматизации
+- **Postman collection** для теста API
 
 ---
-## База данных
-- Таблица users с полями:
-  - id (UUID)
-  - email (unique)
-  - password_hash
-  - created_at
-  - updated_at
-- Таблица roles
-  - id (uuid)
-  - name
-- Таблица refresh_sessions
-  - id
-  - created_at
-  - expired_at
----
 
-## API Endpoints
-Все endpoints реализованы с использованием Gin Framework:
+## ⚡ Быстрый старт
 ```
+# 1. Клонируйте репозиторий
+git clone https://github.com/larinbase/go-auth-service.git
+cd go-auth-service
+
+# 2. Сконфигурируйте .env
+cp .env-example .env
+# (отредактируйте переменные)
+
+# 3. Запуск через Docker Compose
+make up     # или docker-compose up --build
+
+# API будет доступен по адресу http://localhost:8080
+```
+---
+
+## 📚 API Reference
+
+### Auth
+
+#### 1. **Регистрация**
+```json
 POST /api/v1/auth/register
-Request:
+Body:
 {
-    "email": "user@example.com",
-    "password": "securepassword"
+  "email": "user@example.com",
+  "password": "securepassword"
 }
-Response:
-{   
-    "data": {
-        "access_token": "jwt.token.here",
-        "refresh_token": "uuid"
-    },
-    "success": true
-}
-
-POST /api/v1/auth/login
-Request:
+_Response:_
 {
-    "email": "user@example.com",
-    "password": "securepassword"
-}
-Response:
-{   
-    "data": {
-        "access_token": "jwt.token.here",
-        "refresh_token": "uuid"
-    },
-    "success": true
-}
-
-POST /api/v1/auth/refresh-tokens
-Request:
-{
-  "access_token": "jwt.token.here",
-  "refresh_token": "uuid"
-}
-Response:
-{   
-    "data": {
-        "access_token": "jwt.token.here",
-        "refresh_token": "uuid"
-    },
-    "success": true
+  "data": {
+    "access_token": "jwt.token.here",
+    "refresh_token": "uuid"
+  },
+  "success": true
 }
 ```
+#### 2. **Логин по email/паролю**
+```json
+POST /api/auth/login
+Body:
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+_Response аналогичен регистрации._
+```
+#### 3. **Обновление токенов**
+```json
+POST /api/auth/refresh-tokens
+Body:
+{
+  "access_token": "...",
+  "refresh_token": "..."
+}
+_Response аналогичен регистрации._
+```
+#### 4. **Отправка кода на email (2FA или magic link)**
+```json
+POST /api/auth/v2/sendCode
+Body:
+{
+  "email": "user@example.com"
+}
+```
+#### 5. **Логин по коду**
+```json
+POST /api/auth/v2/login
+Body:
+{
+  "email": "user@example.com",
+  "code": 100000
+}
+```
+#### 6. **Регистрация через Keycloak**
+```json
+POST /api/auth/v3/keycloak/register
+Body:
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+---
+
+### Пользователь
+#### 1. **Смена пароля**
+```json
+PATCH /api/user/change-password
+Headers: Authorization: Bearer <token>
+Body:
+{
+  "old_password": "oldpassword",
+  "new_password": "newpassword"
+}
+```
+---
